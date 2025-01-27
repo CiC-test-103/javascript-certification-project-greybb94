@@ -37,6 +37,9 @@ class LinkedList {
    */
   constructor() {
     // TODO
+    this.head = null;
+    this.tail = null;
+    this.length = 0;
   }
 
   /**
@@ -49,6 +52,27 @@ class LinkedList {
    */
   addStudent(newStudent) {
     // TODO
+    let current = this.head;
+  
+    // duplicate student verification logic has been added
+    while (current !== null) {
+      if (current.data.getEmail() === newStudent.getEmail()) {
+        console.log(`Student with email ${newStudent.getEmail()} already exists.`);
+        return;  // Terminate without adding if a duplicate is found
+      }
+      current = current.next;
+    }
+  
+    // new student logic
+    const newNode = new Node(newStudent);
+    if (!this.head) {
+      this.head = newNode;
+      this.tail = newNode;
+    } else {
+      this.tail.next = newNode;
+      this.tail = newNode;
+    }
+    this.length++;
   }
 
   /**
@@ -61,6 +85,34 @@ class LinkedList {
    */
   removeStudent(email) {
     // TODO
+    if (!this.head) {
+      console.log(`Student with email ${email} not found.`);
+      return;
+    }
+
+    if (this.head.data.getEmail() === email) {
+      this.head = this.head.next;
+      this.length--;
+      return;
+    }
+
+    let current = this.head;
+    let prev = null;
+    while (current !== null && current.data.getEmail() !== email) {
+      prev = current;
+      current = current.next;
+    }
+
+    if (current === null) {
+      console.log(`Student with email ${email} not found.`);
+      return;
+    }
+    
+    prev.next = current.next;
+    if (current === this.tail) {
+      this.tail = prev;
+    }
+    this.length--;
   }
 
   /**
@@ -70,7 +122,14 @@ class LinkedList {
    */
   findStudent(email) {
     // TODO
-    return -1
+    let current = this.head;
+    while (current !== null) {
+      if (current.data.getEmail() === email) {
+        return current.data;
+      }
+      current = current.next;
+    }
+    return -1;
   }
 
   /**
@@ -80,8 +139,14 @@ class LinkedList {
    */
   #clearStudents() {
     // TODO
+    this.head = null;
+    this.tail = null;
+    this.length = 0;
   }
-
+  // new public method added
+  clearAll() {
+    this.#clearStudents();
+  }
   /**
    * REQUIRES:  None
    * EFFECTS:   None
@@ -92,8 +157,15 @@ class LinkedList {
    */
   displayStudents() {
     // TODO
-    return "";
+    let result = [];
+    let current = this.head;
+    while (current !== null) {
+      result.push(current.data.getName());
+      current = current.next;
+    }
+    return result.join(", ");
   }
+  
 
   /**
    * REQUIRES:  None
@@ -102,7 +174,13 @@ class LinkedList {
    */
   #sortStudentsByName() {
     // TODO
-    return [];
+    let students = [];
+    let current = this.head;
+    while (current !== null) {
+      students.push(current.data);
+      current = current.next;
+    }
+    return students.sort((a, b) => a.getName().localeCompare(b.getName()));
   }
 
   /**
@@ -114,7 +192,7 @@ class LinkedList {
    */
   filterBySpecialization(specialization) {
     // TODO
-    return [];
+    return this.#sortStudentsByName().filter(student => student.getSpecialization() === specialization);
   }
 
   /**
@@ -126,7 +204,7 @@ class LinkedList {
    */
   filterByMinAge(minAge) {
     // TODO
-    return [];
+    return this.#sortStudentsByName().filter(student => student.getYear() >= minAge);
   }
 
   /**
@@ -134,8 +212,21 @@ class LinkedList {
    * EFFECTS:   Writes the LinkedList to a JSON file with the specified file name
    * RETURNS:   None
    */
-  async saveToJson(fileName) {
+  async saveToJson(fileName) { 
     // TODO
+    const fs = require('fs').promises;
+    let students = [];
+    let current = this.head;
+    while (current !== null) {
+      students.push({
+        name: current.data.getName(),
+        year: current.data.getYear(),
+        email: current.data.getEmail(),
+        specialization: current.data.getSpecialization()
+      });
+      current = current.next;
+    }
+    await fs.writeFile(fileName, JSON.stringify(students, null, 2));
   }
 
   /**
@@ -145,10 +236,19 @@ class LinkedList {
    * CONSIDERATIONS:
    *  - Use clearStudents() to perform overwriting
    */
-  async loadFromJSON(fileName) {
+  async loadFromJSON(fileName) { 
     // TODO
-  }
+    const fs = require('fs').promises;
+    const data = await fs.readFile(fileName, 'utf8');
+    const students = JSON.parse(data);
 
+    this.#clearStudents();
+
+    students.forEach(student => {
+      const newStudent = new Student(student.name, student.year, student.email, student.specialization);
+      this.addStudent(newStudent);
+    });
+  }
 }
 
 module.exports = { LinkedList }

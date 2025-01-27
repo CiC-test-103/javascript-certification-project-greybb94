@@ -47,7 +47,21 @@ async function handleCommand(command) {
         console.log('Adding student...')
         const [name, year, email, specialization] = args
         // --------> WRITE YOUR CODE BELOW
+        const newStudent = new Student(name, parseInt(year), email, specialization);
+        // Check for duplicate student before adding
+        const initialLength = studentManagementSystem.length;
+        studentManagementSystem.addStudent(newStudent);
 
+        // Print success message only if the student was added
+        if (studentManagementSystem.length > initialLength) {
+          console.log("Student added successfully.");
+
+          // Display the list of students only when a new one is successfully added
+          console.log(studentManagementSystem.displayStudents());
+
+        } else {
+        console.log("Failed to add student due to duplicate email.");
+        }
         // --------> WRITE YOUR CODE ABOVE
         break;
 
@@ -62,7 +76,14 @@ async function handleCommand(command) {
        */
       console.log('Removing student...')
       // --------> WRITE YOUR CODE BELOW
-      
+      if (args.length < 1) {
+        console.log('Please provide an email to remove.');
+        break;
+      }
+      const removeEmail = args[0];
+      studentManagementSystem.removeStudent(removeEmail);
+      console.log("Student removed successfully.");
+      console.log(studentManagementSystem.displayStudents());
       // --------> WRITE YOUR CODE ABOVE
       break;
 
@@ -75,7 +96,7 @@ async function handleCommand(command) {
        */
       console.log('Displaying students...')
       // --------> WRITE YOUR CODE BELOW
-
+      console.log(studentManagementSystem.displayStudents());
       // --------> WRITE YOUR CODE ABOVE
       break;
 
@@ -91,7 +112,24 @@ async function handleCommand(command) {
        */
       console.log('Finding student...')
       // --------> WRITE YOUR CODE BELOW
+      if (args.length < 1) {
+        console.log('Please provide an email to search.');
+        break;
+      }
       
+      // 기존 선언을 확인하고 변수 초기화 방식을 수정
+      if (args.length < 1) {
+        console.log('Please provide an email to search.');
+        break;
+      }
+      const findEmail = args[0];
+      const foundStudent = studentManagementSystem.findStudent(findEmail);
+
+      if (foundStudent !== -1) {
+        console.log(`Student found: ${foundStudent.getName()}, ${foundStudent.getEmail()}`);
+      } else {
+        console.log("Student does not exist.");
+      }
       // --------> WRITE YOUR CODE ABOVE
       break;
 
@@ -106,8 +144,15 @@ async function handleCommand(command) {
        */
       console.log('Saving data...')
       // --------> WRITE YOUR CODE BELOW
-
+      if (args.length < 1) {
+        console.log('Please provide a file name to save.');
+        break;
+      }
+      const saveFileName = args[0];
+      await studentManagementSystem.saveToJson(saveFileName);
+      console.log(`Student data saved to ${saveFileName}`);
       // --------> WRITE YOUR CODE ABOVE
+      break;
 
     case "load":
       /**
@@ -120,7 +165,14 @@ async function handleCommand(command) {
        */
       console.log('Loading data...')
       // --------> WRITE YOUR CODE BELOW
-
+      if (args.length < 1) {
+        console.log('Please provide a file name to load.');
+        break;
+      }
+      const loadFileName = args[0];
+      await studentManagementSystem.loadFromJSON(loadFileName);
+      console.log("Student data loaded successfully.");
+      console.log(studentManagementSystem.displayStudents());
       // --------> WRITE YOUR CODE ABOVE
       break;
 
@@ -134,7 +186,8 @@ async function handleCommand(command) {
        */
       console.log('Clearing data...')
       // --------> WRITE YOUR CODE BELOW
-
+      studentManagementSystem.clearAll();
+      console.log("All student data cleared.");
       // --------> WRITE YOUR CODE ABOVE
       break;
 
